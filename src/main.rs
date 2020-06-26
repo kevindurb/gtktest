@@ -1,37 +1,28 @@
-extern crate gio;
 extern crate gtk;
 
-use gio::prelude::*;
 use gtk::prelude::*;
 
 fn main() {
-    let application =
-        gtk::Application::new(Some("com.github.gtk-rs.examples.basic"), Default::default())
-            .expect("failed to initialize GTK application");
+    if gtk::init().is_err() {
+        println!("Failed to initialize GTK.");
+        return;
+    }
 
-    application.connect_activate(|app| {
-        let window = gtk::ApplicationWindow::new(app);
-        window.set_title("First GTK+ Program");
-        window.set_default_size(350, 70);
+    let glade_src = include_str!("interface.glade");
+    let builder = gtk::Builder::new_from_string(glade_src);
+    let window: gtk::Window = builder.get_object("main_window").unwrap();
+    let button: gtk::Button = builder.get_object("button").unwrap();
+    let scale: gtk::Scale = builder.get_object("scale").unwrap();
 
-        let container = gtk::Box::new(gtk::Orientation::Vertical, 16);
-
-        let button = gtk::Button::new_with_label("Click me!");
-        button.connect_clicked(|_| {
-            println!("Clicked!");
-        });
-        container.add(&button);
-
-        let scale = gtk::Scale::new_with_range(gtk::Orientation::Horizontal, 0.0, 10.0, 1.0);
-        scale.connect_value_changed(|_| {
-            println!("scale changed");
-        });
-        container.add(&scale);
-
-        window.add(&container);
-
-        window.show_all();
+    button.connect_clicked(|_| {
+        println!("Clicked!");
     });
 
-    application.run(&[]);
+    scale.connect_value_changed(|_| {
+        println!("scale changed");
+    });
+
+    window.show_all();
+
+    gtk::main();
 }
